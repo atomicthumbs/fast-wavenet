@@ -3,7 +3,7 @@ from time import time
 from wavenet.utils import make_batch
 from wavenet.models import Model, Generator
 
-import librosa
+import pickle 
 
 SAMPLE_RATE = 24000
 
@@ -33,5 +33,5 @@ predictions = generator.run(input_, 32000)
 toc = time()
 print('Generating took {} seconds.'.format(toc-tic))
 
-OUTPUT_PATH = 'generated.wav'
-librosa.output.write_wav(OUTPUT_PATH,predictions,SAMPLE_RATE)
+OUTPUT_PATH = 'generated_file'
+pickle.dump(OUTPUT_PATH,predictions)
