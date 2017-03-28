@@ -1,7 +1,6 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from layers import (_causal_linear, _output_linear, conv1d,
+from wavenet.layers import (_causal_linear, _output_linear, conv1d,
                     dilated_conv1d)
 
 
@@ -80,9 +79,7 @@ class Model(object):
             if cost < 1e-1:
                 terminal = True
             losses.append(cost)
-            if i % 50 == 0:
-                plt.plot(losses)
-                plt.show()
+            print("Step {}: Loss {}".format(i,cost))
 
 
 class Generator(object):
@@ -147,11 +144,6 @@ class Generator(object):
 
             if step % 1000 == 0:
                 predictions_ = np.concatenate(predictions, axis=1)
-                plt.plot(predictions_[0, :], label='pred')
-                plt.legend()
-                plt.xlabel('samples from start')
-                plt.ylabel('signal')
-                plt.show()
-
+                print("Generation: Step {} of {}".format(step,num_samples))
         predictions_ = np.concatenate(predictions, axis=1)
         return predictions_
