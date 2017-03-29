@@ -10,7 +10,7 @@ SAMPLE_RATE = 24000
 inputs, targets = make_batch('assets/SMvocals.wav')
 num_time_samples = inputs.shape[1]
 num_channels = 1
-gpu_fraction = 0
+gpu_fraction = 1
 
 model = Model(num_time_samples=num_time_samples,
               num_channels=num_channels,
