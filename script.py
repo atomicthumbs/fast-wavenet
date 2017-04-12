@@ -4,6 +4,14 @@ from wavenet.utils import make_batch
 from wavenet.models import Model, Generator
 
 import pickle 
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--num_layers', type=int, default=5,
+                     help='Number of hidden layers')
+
+FLAGS, unparsed = parser.parse_known_args()
+
 
 SAMPLE_RATE = 24000
 
@@ -14,7 +22,8 @@ gpu_fraction = 1
 
 model = Model(num_time_samples=num_time_samples,
               num_channels=num_channels,
-              gpu_fraction=gpu_fraction)
+              gpu_fraction=gpu_fraction,
+              num_layers=FLAGS.num_layers or 5)
 
 
 tic = time()
@@ -29,7 +38,7 @@ generator = Generator(model)
 input_ = inputs[:, 0:1, 0]
 
 tic = time()
-predictions = generator.run(input_, 32000)
+predictions = generator.run(input_, SAMPLE_RATE)
 toc = time()
 print('Generating took {} seconds.'.format(toc-tic))
 
