@@ -4,6 +4,12 @@
     name: Train model
     image: gcr.io/tensorflow/tensorflow:0.12.1-devel-gpu
     command: python script.py
+    parameters:
+      - name: num_layers
+        pass-as: --num_layers={v}
+        description: Number of hidden layers
+        type: integer
+        default: 5
 
 - step:
     name: Worker environment check
