@@ -10,6 +10,16 @@
         description: Number of hidden layers
         type: integer
         default: 5
+      - name: learning_rate
+        pass-as: --learning_rate={v}
+        description: learning rate
+        type: float
+        default: 0.001
+      - name: stopping_loss
+        pass-as: --stopping_loss={v}
+        description: loss at which training stops
+        type: float
+        default: 0.5
 
 - step:
     name: Worker environment check

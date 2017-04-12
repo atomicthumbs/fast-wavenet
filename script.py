@@ -9,7 +9,10 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--num_layers', type=int, default=5,
                      help='Number of hidden layers')
-
+parser.add_argument('--learning_rate', type=float, default=0.001,
+                     help='learning rate')
+parser.add_argument('--stopping_loss', type=float, default=0.1,
+		     help='loss at which training stops')
 FLAGS, unparsed = parser.parse_known_args()
 
 
@@ -23,8 +26,9 @@ gpu_fraction = 1
 model = Model(num_time_samples=num_time_samples,
               num_channels=num_channels,
               gpu_fraction=gpu_fraction,
-              num_layers=FLAGS.num_layers or 5)
-
+              num_layers=FLAGS.num_layers or 5,
+	      learning_rate = FLAGS.learning_rate,
+	      stopping_loss = FLAGS.stopping_loss)
 
 tic = time()
 model.train(inputs, targets)

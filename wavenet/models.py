@@ -12,7 +12,9 @@ class Model(object):
                  num_blocks=2,
                  num_layers=14,
                  num_hidden=128,
-                 gpu_fraction=1.0):
+                 gpu_fraction=1.0,
+		 learning_rate=0.001,
+		 stopping_loss=0.1):
         
         self.num_time_samples = num_time_samples
         self.num_channels = num_channels
@@ -21,7 +23,9 @@ class Model(object):
         self.num_layers = num_layers
         self.num_hidden = num_hidden
         self.gpu_fraction = gpu_fraction
-        
+        self.learning_rate = learning_rate
+	self.stopping_loss = stopping_loss
+
         inputs = tf.placeholder(tf.float32,
                                 shape=(None, num_time_samples, num_channels))
         targets = tf.placeholder(tf.int32, shape=(None, num_time_samples))
@@ -46,7 +50,7 @@ class Model(object):
             outputs, targets)
         cost = tf.reduce_mean(costs)
 
-        train_step = tf.train.AdamOptimizer(learning_rate=0.001).minimize(cost)
+        train_step = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(cost)
 
         gpu_options = tf.GPUOptions(
              allow_growth = True)
@@ -77,7 +81,7 @@ class Model(object):
         while not terminal:
             i += 1
             cost = self._train(inputs, targets)
-            if cost < 1e-1:
+            if cost < self.stopping_loss:
                 terminal = True
             losses.append(cost)
             print("Step {}: Loss {}".format(i,cost))
