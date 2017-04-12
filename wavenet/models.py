@@ -49,7 +49,8 @@ class Model(object):
         train_step = tf.train.AdamOptimizer(learning_rate=0.001).minimize(cost)
 
         gpu_options = tf.GPUOptions(
-            per_process_gpu_memory_fraction=gpu_fraction)
+             allow_growth = True)
+        #    per_process_gpu_memory_fraction=gpu_fraction)
         sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
         sess.run(tf.initialize_all_variables())
 
