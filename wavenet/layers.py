@@ -20,7 +20,7 @@ def time_to_batch(inputs, rate, causal=True):
     pad = width_pad - width
 
     perm = (1, 0, 2)
-    shape = (width_pad / rate, -1, num_channels) # missing dim: batch_size * rate
+    shape = (int(width_pad / rate), -1, num_channels) # missing dim: batch_size * rate
     if causal:
         padded = tf.pad(inputs, [[0, 0], [pad, 0], [0, 0]])
     else:
@@ -56,7 +56,7 @@ def batch_to_time(inputs, rate, crop_left=0):
     transposed = tf.transpose(inputs, perm)    
     reshaped = tf.reshape(transposed, new_shape)
     outputs = tf.transpose(reshaped, perm)
-    print outputs.get_shape(), crop_left
+    print(outputs.get_shape(), crop_left)
     cropped = tf.slice(outputs, [0, crop_left, 0], [-1, -1, -1])
     return cropped
 
@@ -122,7 +122,8 @@ def dilated_conv1d(inputs,
                    padding='VALID',
                    gain=np.sqrt(2),
                    activation=tf.nn.relu,
-                   causal=True):
+                   causal=True,
+                   name=None):
     '''
     
     Args:
@@ -138,24 +139,26 @@ def dilated_conv1d(inputs,
     Outputs:
       outputs: (tensor)
     '''
-    _, width, _ = inputs.get_shape().as_list()
-    inputs_ = time_to_batch(inputs, rate=rate, causal=causal)
-    outputs_ = conv1d(inputs_,
-                      out_channels=out_channels,
-                      filter_width=filter_width,
-                      padding=padding,
-                      gain=gain,
-                      activation=activation)
-    _, conv_out_width, _ = outputs_.get_shape().as_list()
-    new_width = conv_out_width * rate
-    diff = new_width - width
-    outputs = batch_to_time(outputs_, rate=rate, crop_left=diff)
+    assert name
+    with tf.variable_scope(name):
+        _, width, _ = inputs.get_shape().as_list()
+        inputs_ = time_to_batch(inputs, rate=rate, causal=causal)
+        outputs_ = conv1d(inputs_,
+                          out_channels=out_channels,
+                          filter_width=filter_width,
+                          padding=padding,
+                          gain=gain,
+                          activation=activation)
+        _, conv_out_width, _ = outputs_.get_shape().as_list()
+        new_width = conv_out_width * rate
+        diff = new_width - width
+        outputs = batch_to_time(outputs_, rate=rate, crop_left=diff)
 
-    # Add additional shape information.
-    tensor_shape = [tf.Dimension(None),
-                    tf.Dimension(width),
-                    tf.Dimension(out_channels)]
-    outputs.set_shape(tf.TensorShape(tensor_shape))
+        # Add additional shape information.
+        tensor_shape = [tf.Dimension(None),
+                        tf.Dimension(width),
+                        tf.Dimension(out_channels)]
+        outputs.set_shape(tf.TensorShape(tensor_shape))
     return outputs
 
 def _causal_linear(inputs, state, name=None, activation=None):
