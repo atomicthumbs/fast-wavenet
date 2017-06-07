@@ -1,0 +1,31 @@
+---
+
+- step:
+    name: Train model
+    image: gcr.io/tensorflow/tensorflow:0.12.1-devel-gpu
+    command: python script.py
+    parameters:
+      - name: num_layers
+        pass-as: --num_layers={v}
+        description: Number of hidden layers
+        type: integer
+        default: 5
+      - name: learning_rate
+        pass-as: --learning_rate={v}
+        description: learning rate
+        type: float
+        default: 0.001
+      - name: stopping_loss
+        pass-as: --stopping_loss={v}
+        description: loss at which training stops
+        type: float
+        default: 0.5
+
+- step:
+    name: Worker environment check
+    image: gcr.io/tensorflow/tensorflow:0.12.1-devel-gpu
+    command:
+      - pwd
+      - ls -la
+      - nvidia-smi
+      - python --version

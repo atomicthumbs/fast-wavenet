@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from wavenet.layers import (_causal_linear, _output_linear, conv1d,
@@ -13,7 +12,9 @@ class Model(object):
                  num_blocks=2,
                  num_layers=14,
                  num_hidden=128,
-                 gpu_fraction=1.0):
+                 gpu_fraction=1.0,
+		 learning_rate=0.001,
+		 stopping_loss=0.1):
         
         self.num_time_samples = num_time_samples
         self.num_channels = num_channels
@@ -22,7 +23,9 @@ class Model(object):
         self.num_layers = num_layers
         self.num_hidden = num_hidden
         self.gpu_fraction = gpu_fraction
-        
+        self.learning_rate = learning_rate
+	self.stopping_loss = stopping_loss
+
         inputs = tf.placeholder(tf.float32,
                                 shape=(None, num_time_samples, num_channels))
         targets = tf.placeholder(tf.int32, shape=(None, num_time_samples))
@@ -47,10 +50,11 @@ class Model(object):
             logits=outputs, labels=targets)
         cost = tf.reduce_mean(costs)
 
-        train_step = tf.train.AdamOptimizer(learning_rate=0.001).minimize(cost)
+        train_step = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(cost)
 
         gpu_options = tf.GPUOptions(
-            per_process_gpu_memory_fraction=gpu_fraction)
+             allow_growth = True)
+        #    per_process_gpu_memory_fraction=gpu_fraction)
         sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
         sess.run(tf.global_variables_initializer())
 
@@ -77,12 +81,10 @@ class Model(object):
         while not terminal:
             i += 1
             cost = self._train(inputs, targets)
-            if cost < 1e-1:
+            if cost < self.stopping_loss:
                 terminal = True
             losses.append(cost)
-            if i % 50 == 0:
-                plt.plot(losses)
-                plt.show()
+            print("Step {}: Loss {}".format(i,cost))
 
 
 class Generator(object):
@@ -147,11 +149,6 @@ class Generator(object):
 
             if step % 1000 == 0:
                 predictions_ = np.concatenate(predictions, axis=1)
-                plt.plot(predictions_[0, :], label='pred')
-                plt.legend()
-                plt.xlabel('samples from start')
-                plt.ylabel('signal')
-                plt.show()
-
+                print("Generation: Step {} of {}".format(step,num_samples))
         predictions_ = np.concatenate(predictions, axis=1)
         return predictions_
